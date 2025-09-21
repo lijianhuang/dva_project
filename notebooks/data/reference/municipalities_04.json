@@ -1,0 +1,162 @@
+[
+  {
+    "id": "04100",
+    "name": "Sendai City"
+  },
+  {
+    "id": "04101",
+    "name": "Aoba Ward"
+  },
+  {
+    "id": "04102",
+    "name": "Miyagino Ward"
+  },
+  {
+    "id": "04103",
+    "name": "Wakabayashi Ward"
+  },
+  {
+    "id": "04104",
+    "name": "Taihaku Ward"
+  },
+  {
+    "id": "04105",
+    "name": "Izumi Ward"
+  },
+  {
+    "id": "04202",
+    "name": "Ishinomaki City"
+  },
+  {
+    "id": "04203",
+    "name": "Shiogama City"
+  },
+  {
+    "id": "04205",
+    "name": "Kesennuma City"
+  },
+  {
+    "id": "04206",
+    "name": "Shiroishi City"
+  },
+  {
+    "id": "04207",
+    "name": "Natori City"
+  },
+  {
+    "id": "04208",
+    "name": "Kakuda City"
+  },
+  {
+    "id": "04209",
+    "name": "Tagajo City"
+  },
+  {
+    "id": "04211",
+    "name": "Iwanuma City"
+  },
+  {
+    "id": "04212",
+    "name": "Tome City"
+  },
+  {
+    "id": "04213",
+    "name": "Kurihara City"
+  },
+  {
+    "id": "04214",
+    "name": "Higashimatsushima City"
+  },
+  {
+    "id": "04215",
+    "name": "Osaki City"
+  },
+  {
+    "id": "04216",
+    "name": "Tomiya City"
+  },
+  {
+    "id": "04301",
+    "name": "Zao Town"
+  },
+  {
+    "id": "04302",
+    "name": "Shichikashuku Town"
+  },
+  {
+    "id": "04321",
+    "name": "Ogawara Town"
+  },
+  {
+    "id": "04322",
+    "name": "Murata Town"
+  },
+  {
+    "id": "04323",
+    "name": "Shibata Town"
+  },
+  {
+    "id": "04324",
+    "name": "Kawasaki Town"
+  },
+  {
+    "id": "04341",
+    "name": "Marumori Town"
+  },
+  {
+    "id": "04361",
+    "name": "Watari Town"
+  },
+  {
+    "id": "04362",
+    "name": "Yamamoto Town"
+  },
+  {
+    "id": "04401",
+    "name": "Matsushima Town"
+  },
+  {
+    "id": "04404",
+    "name": "Shichigahama Town"
+  },
+  {
+    "id": "04406",
+    "name": "Rifu Town"
+  },
+  {
+    "id": "04421",
+    "name": "Taiwa Town"
+  },
+  {
+    "id": "04422",
+    "name": "Osato Town"
+  },
+  {
+    "id": "04424",
+    "name": "Ohira Village"
+  },
+  {
+    "id": "04444",
+    "name": "Shikama Town"
+  },
+  {
+    "id": "04445",
+    "name": "Kami Town"
+  },
+  {
+    "id": "04501",
+    "name": "Wakuya Town"
+  },
+  {
+    "id": "04505",
+    "name": "Misato Town"
+  },
+  {
+    "id": "04581",
+    "name": "Onagawa Town"
+  },
+  {
+    "id": "04606",
+    "name": "Minamisanriku Town"
+  }
+]
