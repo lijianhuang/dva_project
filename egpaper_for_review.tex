@@ -1,0 +1,141 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{tabularx,array,booktabs}
+
+\title{\textbf{Hedonic Forecast: ML Housing Prediction in Japan}}
+\author{Team 90: Jianhuang Li, Shin Ying Chua, Wei Qi Thong, Ryan Kai Yan Seet}
+
+\begin{document}
+\date{}
+\maketitle
+\section*{Abstract \;(Q1)}
+
+We aim to develop an interactive dashboard forecasting quarterly housing prices in Tokyo's 23 wards and Sendai using MLIT transaction data \cite{mlit_data}. The system constructs hedonic price indices and compares linear regression, random forest, gradient boosting, and LSTM models, with SHAP interpretability to help investors and policymakers identify emerging real estate trends across cities.
+
+\vspace{-0.4em}
+\section*{Background \& Literature Survey \;(Q2)}
+Japanese real estate forecasting has multiple problems. Official JRPPI indices \cite{jrppi2020} lag 2-3 months, rendering them less useful for investors and stakeholders who need timely signals. Academic models are generally split between spatial and temporal factor models: spatial ML \cite{spatial2021} ignores time, while temporal models such as LSTMs \cite{lstm2017} ignore location. Transformers \cite{transform2024} have the potential to handle both but have high computational costs and ultimately prove difficult to interpret.
+
+
+\vspace{1em}
+
+\noindent Research also shows that nearby transactions influence local prices \cite{spatiotemporal2023}, but modeling full spatial covariance structures is computationally intensive. We use mesh aggregation \cite{jsai2022}; a grid-based shortcut that captures neighborhood effects efficiently. For interpretability, we apply SHAP \cite{shap2017, lundberg2020nmi}, which quantifies the importance of characteristics in models including LSTMs \cite{shap_lstm2025}. Some articles have also proven that multivariate LSTMs that incorporate multiple input features consistently outperform univariate approaches in financial and economic forecasting \cite{multivariate_lstm2022}. Operational research on Tokyo's 23 wards also demonstrates practical MLIT data cleaning procedures and adaptive rolling windows \cite{hitotsubashi2023} which we will utilize in our approach to work with the dataset. Peng and Inoue \cite{peng2022} apply eigenvector spatial filtering to show that Tokyo housing prices reflect both local factors, such as nearby schools or train stations, and regional effects across wards. This highlights the need for multi-scale spatial features in our forecasting models, though their study is mainly explanatory rather than predictive.
+
+\vspace{1em}
+\noindent Overall, this review reveals multiple gaps in existing literature. Official pricing indices have delays, spatial-temporal effects are often separated, models lack transparency, and contemporary research focuses overwhelmingly on Tokyo. No work systematically compares multiple ML approaches with SHAP interpretability and interactive visualization while comparing Tokyo with regional cities.
+
+
+\vspace{-0.4em}
+\section*{Proposed Approach \;(Q3)}
+We combine extracted hedonic real estate price indices, multi-model forecasting with spatial features, and SHAP interpretability in an interactive dashboard. Our three-stage process addresses current limitations while remaining computationally practical.
+
+\subsection*{Step 1: Construct the Price Index}
+We use hedonic regression on transaction prices with property traits, municipality, and time fixed effects \cite{transform2024}. 
+\begin{equation*}
+\log(P_{it}) = \beta_0 + \beta_1\text{Area} + \beta_2\text{Age} + \beta_3\text{Type} + \delta_{\text{muni}} + \gamma_{\text{time}} + \varepsilon_{it}
+\end{equation*}
+The time effects $\gamma_{\text{time}}$ yield the housing price index: 
+$\text{Index}_t = \exp(\gamma_t)/\exp(\gamma_1)$.
+
+\subsection*{Step 2: Feature Engineering and Multi-Model Forecasting}
+We will construct features from temporal patterns (lagged indices, moving averages) and spatial neighbors via mesh aggregation \cite{jsai2022}, then compare four models: linear regression (baseline), random forests, LightGBM, and multivariate LSTM. Each will predict one-quarter-ahead changes, trained separately for Tokyo and Sendai. SHAP analysis \cite{shap_lstm2025} will then identify the key drivers of predictions.
+
+\vspace{-0.4em}
+\section*{Stakeholders and anticipated Impact (Q4, Q5)}
+Our proposed system will provide timely, ward-level forecasts to a range of stakeholders. Real estate investors and financial institutions can use these insights for proactive decision-making and improved credit risk assessment. Urban planners and academics can also leverage the system to monitor housing affordability and conduct comparative inter-city research. To achieve this, we will implement the aforementioned machine learning models to deliver more granular predictions than current methods. We will validate model accuracy against live property data from publicly available sites like SUUMO\cite{suumo} using metrics such as MAE and RMSE, and collect usage analytics post-deployment to measure practical impact.
+
+\section*{Risks, Cost \& Resources \;(Q6,\;Q7)}
+\noindent Key risks are noisy MLIT data, LSTM costs, and overfitting in small wards. The payoff is a timely, interpretable system useful to investors, policymakers, and banks, with potential to generalize. The project cost is minimal and API data is free. We can utilize on local GPU for model training.
+
+
+\vspace{-0.4em}
+\section*{Plan, Timeline \& progress Milestones\;(Q8, Q9)}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|l|c|c|}
+\hline
+\textbf{Activity} & \textbf{Checkpoints} & \textbf{Members} & \textbf{Start} & \textbf{Duration} \\
+\hline
+Literature survey & 12 peer-reviewed papers & All & Wk5 & 2 wks \\
+Data cleaned \& features (ward/mesh) built & 90\% spatial tags & All & Wk7 & 2 wks \\
+Baseline models (LR, RF, LightGBM) \& index validation & Midterm: hedonic indices built; baseline forecasts built and evaluated. & M1, M2 & Wk9 & 2 wks \\
+Advanced models (LSTM) \& SHAP & SHAP plots generated for global and local & M3, M4 & Wk11 & 2 wks \\
+Interactive Dashboard (map, leaderboard, SHAP) & Final: dashboard, report/video completed  & All & Wk13 & 2 wks \\
+\hline
+\end{tabularx}
+\end{center}
+
+\noindent All members contributed equally in the writing of this proposal.
+
+
+\bibliographystyle{apalike}
+\begin{thebibliography}{99}
+
+\bibitem{mlit_data}
+Ministry of Land, Infrastructure, Transport and Tourism. (2005--present). \textit{Real Estate Information Library}. Retrieved from \url{https://www.reinfolib.mlit.go.jp/}
+
+\bibitem{jrppi2020}
+Ministry of Land, Infrastructure, Transport and Tourism, Real Estate and Construction Economy Bureau. (2020). \textit{Methodology of JRPPI: Japan Residential Property Price Index}. Retrieved from \url{https://www.mlit.go.jp/common/001360414.pdf}
+
+\bibitem{spatial2021}
+Yoshida, T., \& Seya, H. (2024). Spatial prediction of apartment rent using regression-based and machine learning-based approaches with a large dataset. \textit{The Journal of Real Estate Finance and Economics}, \textit{69}(1), 1--28. https://doi.org/10.1007/s11146-022-09929-6
+
+\bibitem{lstm2017}
+Chen, X., Wei, L., \& Xu, J. (2017). House price prediction using LSTM. \textit{arXiv preprint arXiv:1709.08432}. \url{https://arxiv.org/abs/1709.08432}
+
+\bibitem{transform2024}
+Haque, D. (2024). Transforming Japan real estate. \textit{arXiv preprint arXiv:2405.20715}.\url{https://arxiv.org/html/2405.20715v1}
+
+\bibitem{spatiotemporal2023}
+Muto, S., Sugasawa, S., \& Suzuki, M. (2023). Hedonic real estate price estimation with the spatiotemporal geostatistical model. \textit{Journal of Spatial Econometrics}.\url{https://link.springer.com/content/pdf/10.1007/s43071-023-00039-w.pdf}
+
+\bibitem{jsai2022}
+Mizuho Research \& Technologies, Ltd. (2022). \textit{機械学習を用いた土地価格の予測 [Prediction of Land Prices Using Machine Learning with Mesh-Based Neighbor Features ]}. JSAI Special Interest Group on Financial Informatics (SIG-FIN-029-61). Retrieved from \url{https://www.jstage.jst.go.jp/article/jsaisigtwo/2022/FIN-029/2022_61/_pdf}
+
+\bibitem{hitotsubashi2023}
+Otsuki, K. 2023). \textit{A Study on Data-Cleansing Methods and Model-Update Algorithms for Real Estate Price Forecasting Models} [Doctoral dissertation, Hitotsubashi University]. Hitotsubashi University Repository. \url{https://hit-u.repo.nii.ac.jp/records/2048234}
+
+\bibitem{shap2017}
+Lundberg, S. M., \& Lee, S.-I. (2017). A unified approach to interpreting model predictions. In \textit{Advances in Neural Information Processing Systems 30} (pp. 4765--4774). Curran Associates, Inc. \url{https://arxiv.org/abs/1705.07874}
+
+\bibitem{shap_lstm2025}
+Sen, D., Deora, B. S., \& Vaishnav, A. (2024). Explainable deep learning for time series analysis: Integrating SHAP and LIME in LSTM-based models. \textit{Journal of Information Systems Engineering and Management}, \textit{10}(16s). \url{https://jisem-journal.com/index.php/journal/article/view/2627}
+
+\bibitem{multivariate_lstm2022}
+Kuber, V., Yadav, D., \& Yadav, A. K. (2022). Univariate and multivariate LSTM model for short-term stock market prediction. \textit{arXiv preprint arXiv:2205.06673}. \url{https://arxiv.org/abs/2205.06673}
+
+\bibitem{hyndman2006}
+Hyndman, R. J., \& Koehler, A. B. (2006). Another look at measures of forecast accuracy.
+\textit{International Journal of Forecasting}, \textit{22}(4), 679--688.
+\url{https://doi.org/10.1016/j.ijforecast.2006.03.001}
+
+\bibitem{lundberg2020nmi}
+Lundberg, S. M., Erion, G., Chen, H., DeGrave, A., Prutkin, J. M., Nair, B., Katz, R.,
+Himmelfarb, J., Bansal, N., \& Lee, S.-I. (2020).
+From local explanations to global understanding with explainable AI for trees.
+\textit{Nature Machine Intelligence}, \textit{2}(1), 56--67.
+\url{https://doi.org/10.1038/s42256-019-0138-9}
+
+\bibitem{tashman2000}
+Tashman, L. J. (2000). Out-of-sample tests of forecasting accuracy: An analysis and review.
+\textit{International Journal of Forecasting}, \textit{16}(4), 437--450.
+\url{https://doi.org/10.1016/S0169-2070(00)00065-0}
+
+
+\bibitem{peng2022}
+Peng, Z., \& Inoue, R. (2022). Identifying multiple scales of spatial heterogeneity in housing prices based on eigenvector spatial filtering approaches. 
+\textit{ISPRS International Journal of Geo-Information}, \textit{11}(5), 283. 
+\url{https://doi.org/10.3390/ijgi11050283}
+
+\bibitem{suumo}
+Recruit Co., Ltd. (n.d.). \textit{SUUMO}. Retrieved October 4, 2025, from \url{https://suumo.jp/}
+
+
+\end{thebibliography}
+
+\end{document}
