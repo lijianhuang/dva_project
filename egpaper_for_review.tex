@@ -15,7 +15,7 @@
 \maketitle
 \section*{Abstract \;(Q1)}
 
-We aim to develop an interactive dashboard forecasting quarterly housing prices in Tokyo's 23 wards and Sendai using MLIT transaction data \cite{mlit_data}. The system constructs hedonic price indices and compares linear regression, random forest, gradient boosting, and LSTM models, with SHAP interpretability to help investors and policymakers identify emerging real estate trends across cities.
+We aim to develop an interactive dashboard forecasting quarterly housing prices in Tokyo's 23 wards and Sendai using MLIT transaction data \cite{mlit_data}. The system constructs hedonic price indices and compares linear regression, random forest, and gradient boosting models, with lightweight diagnostics to help investors and policymakers identify emerging real estate trends across cities.
 
 \vspace{-0.4em}
 \section*{Background \& Literature Survey \;(Q2)}
@@ -43,14 +43,14 @@ The time effects $\gamma_{\text{time}}$ yield the housing price index:
 $\text{Index}_t = \exp(\gamma_t)/\exp(\gamma_1)$.
 
 \subsection*{Step 2: Feature Engineering and Multi-Model Forecasting}
-We will construct features from temporal patterns (lagged indices, moving averages) and spatial neighbors via mesh aggregation \cite{jsai2022}, then compare four models: linear regression (baseline), random forests, LightGBM, and multivariate LSTM. Each will predict one-quarter-ahead changes, trained separately for Tokyo and Sendai. SHAP analysis \cite{shap_lstm2025} will then identify the key drivers of predictions.
+We will construct features from temporal patterns (lagged indices, moving averages) and spatial neighbors via mesh aggregation \cite{jsai2022}, then compare three models: linear regression (baseline), random forests, and LightGBM. Each will predict one-quarter-ahead changes, trained separately for Tokyo and Sendai. Model interpretability will rely on hedonic coefficients, feature importances, and error diagnostics that surface the main drivers of predictions. The workflow is implemented through three notebooks: \texttt{00\_api\_examples} (API demo), \texttt{01\_data\_processing} (feature assembly), and \texttt{02\_hedonic\_models} (index and forecasts).
 
 \vspace{-0.4em}
 \section*{Stakeholders and anticipated Impact (Q4, Q5)}
 Our proposed system will provide timely, ward-level forecasts to a range of stakeholders. Real estate investors and financial institutions can use these insights for proactive decision-making and improved credit risk assessment. Urban planners and academics can also leverage the system to monitor housing affordability and conduct comparative inter-city research. To achieve this, we will implement the aforementioned machine learning models to deliver more granular predictions than current methods. We will validate model accuracy against live property data from publicly available sites like SUUMO\cite{suumo} using metrics such as MAE and RMSE, and collect usage analytics post-deployment to measure practical impact.
 
 \section*{Risks, Cost \& Resources \;(Q6,\;Q7)}
-\noindent Key risks are noisy MLIT data, LSTM costs, and overfitting in small wards. The payoff is a timely, interpretable system useful to investors, policymakers, and banks, with potential to generalize. The project cost is minimal and API data is free. We can utilize on local GPU for model training.
+\noindent Key risks are noisy MLIT data, gradient boosting training costs, and overfitting in small wards. The payoff is a timely, interpretable system useful to investors, policymakers, and banks, with potential to generalize. The project cost is minimal and API data is free. We can utilize on local GPU for model training.
 
 
 \vspace{-0.4em}
@@ -64,7 +64,7 @@ Our proposed system will provide timely, ward-level forecasts to a range of stak
 Literature survey & 12 peer-reviewed papers & All & Wk5 & 2 wks \\
 Data cleaned \& features (ward/mesh) built & 90\% spatial tags & All & Wk7 & 2 wks \\
 Baseline models (LR, RF, LightGBM) \& index validation & Midterm: hedonic indices built; baseline forecasts built and evaluated. & M1, M2 & Wk9 & 2 wks \\
-Advanced models (LSTM) \& SHAP & SHAP plots generated for global and local & M3, M4 & Wk11 & 2 wks \\
+Model evaluation \& visualization & Forecast leaderboard and diagnostic plots delivered & M3, M4 & Wk11 & 2 wks \\
 Interactive Dashboard (map, leaderboard, SHAP) & Final: dashboard, report/video completed  & All & Wk13 & 2 wks \\
 \hline
 \end{tabularx}

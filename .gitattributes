@@ -1,3 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 test_notebooks/transactions.csv filter=lfs diff=lfs merge=lfs -text
+test_notebooks/*.csv filter=lfs diff=lfs merge=lfs -text
+test_notebooks/*.pkl filter=lfs diff=lfs merge=lfs -text
