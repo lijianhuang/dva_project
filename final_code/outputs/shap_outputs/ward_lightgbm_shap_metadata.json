@@ -17,7 +17,7 @@
     "Q_3",
     "Q_4"
   ],
-  "n_samples": 224,
+  "n_samples": 150,
   "target_col": "MedianPriceSqM",
   "split": "val"
 }

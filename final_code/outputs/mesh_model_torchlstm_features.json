@@ -1,0 +1,38 @@
+{
+  "feature_cols": [
+    "mesh_median_ppsqm",
+    "mesh_median_ppsqm_lag1",
+    "mesh_median_ppsqm_ma4q",
+    "mesh_median_ppsqm_growth_qoq",
+    "mesh_transaction_count",
+    "mesh_avg_age",
+    "mesh_avg_area"
+  ],
+  "mean": {
+    "mesh_median_ppsqm": 626031.5601601454,
+    "mesh_median_ppsqm_lag1": 622135.5724357148,
+    "mesh_median_ppsqm_ma4q": 620828.2268123273,
+    "mesh_median_ppsqm_growth_qoq": 7.515042459037802,
+    "mesh_transaction_count": 18.43139289543772,
+    "mesh_avg_age": 16.24262934117154,
+    "mesh_avg_area": 161.24563474391203
+  },
+  "std": {
+    "mesh_median_ppsqm": 541511.8245317086,
+    "mesh_median_ppsqm_lag1": 570387.5631760922,
+    "mesh_median_ppsqm_ma4q": 417912.99833946733,
+    "mesh_median_ppsqm_growth_qoq": 68.3693907483853,
+    "mesh_transaction_count": 13.471580791737033,
+    "mesh_avg_age": 6.701773491325948,
+    "mesh_avg_area": 367.0771074197771
+  },
+  "features": [
+    "mesh_median_ppsqm",
+    "mesh_median_ppsqm_lag1",
+    "mesh_median_ppsqm_ma4q",
+    "mesh_median_ppsqm_growth_qoq",
+    "mesh_transaction_count",
+    "mesh_avg_age",
+    "mesh_avg_area"
+  ]
+}

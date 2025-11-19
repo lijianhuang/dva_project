@@ -7,11 +7,13 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
+import shap
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
 from . import config
+from .shap_utils import write_shap_outputs
 from .utils import evaluate_sets, period_to_order, TRAIN_END, VAL_END
 
 SEQ_LEN = 8
@@ -53,7 +55,13 @@ class PriceLSTM(nn.Module):
         return self.fc(last_hidden)
 
 
-def prepare_sequence_data(panel: pd.DataFrame, feature_cols: List[str], target_col: str, group_col: str = "Ward"):
+def prepare_sequence_data(
+    panel: pd.DataFrame,
+    feature_cols: List[str],
+    target_col: str,
+    group_col: str = "Ward",
+    meta_cols: List[str] | None = None,
+):
     feature_cols = [c for c in feature_cols if c in panel.columns]
     df = panel.dropna(subset=feature_cols + [target_col]).copy()
     df["Order"] = df["PeriodKey"].apply(period_to_order)
@@ -65,6 +73,7 @@ def prepare_sequence_data(panel: pd.DataFrame, feature_cols: List[str], target_c
     df["_target_raw"] = target_raw
 
     sequence_data = {split: {"features": [], "targets": [], "meta": []} for split in ["train", "val", "test"]}
+    meta_cols = meta_cols or []
 
     for key, group in df.groupby(group_col):
         group = group.sort_values("Order")
@@ -85,9 +94,9 @@ def prepare_sequence_data(panel: pd.DataFrame, feature_cols: List[str], target_c
             meta = {
                 group_col: key,
                 "PeriodKey": group["PeriodKey"].iloc[idx],
-                "WardLat": group["WardLat"].iloc[idx] if "WardLat" in group.columns else np.nan,
-                "WardLon": group["WardLon"].iloc[idx] if "WardLon" in group.columns else np.nan,
             }
+            for col in meta_cols:
+                meta[col] = group[col].iloc[idx] if col in group.columns else np.nan
             sequence_data[split]["features"].append(window)
             sequence_data[split]["targets"].append(y)
             sequence_data[split]["meta"].append(meta)
@@ -183,8 +192,78 @@ def predict_sequences(model, split_data):
     return preds
 
 
-def run_lstm_pipeline(ward_panel: pd.DataFrame, feature_cols: List[str], target_col: str):
-    sequence_data, scaler_info = prepare_sequence_data(ward_panel, feature_cols, target_col)
+def export_lstm_shap(
+    level_name: str,
+    model: PriceLSTM,
+    sequence_data: Dict[str, Dict[str, np.ndarray]],
+    feature_cols: List[str],
+    target_col: str,
+    predictions: Dict[str, np.ndarray],
+):
+    eval_split = "val" if sequence_data["val"]["features"].size else "test"
+    if sequence_data[eval_split]["features"].size == 0 or sequence_data["train"]["features"].size == 0:
+        return
+    background_np = sequence_data["train"]["features"]
+    if background_np.shape[0] > LSTM_SHAP_BACKGROUND_CAP:
+        background_np = background_np[:LSTM_SHAP_BACKGROUND_CAP]
+    background = torch.tensor(background_np, dtype=torch.float32)
+    eval_feats_np = sequence_data[eval_split]["features"]
+    eval_targets = sequence_data[eval_split]["targets"]
+    eval_meta = sequence_data[eval_split]["meta"].reset_index(drop=True)
+    if eval_feats_np.shape[0] > MAX_LSTM_SHAP_EVAL:
+        eval_feats_np = eval_feats_np[:MAX_LSTM_SHAP_EVAL]
+        eval_targets = eval_targets[:MAX_LSTM_SHAP_EVAL]
+        eval_meta = eval_meta.iloc[:MAX_LSTM_SHAP_EVAL].reset_index(drop=True)
+    eval_features = torch.tensor(eval_feats_np, dtype=torch.float32)
+
+    model_cpu = PriceLSTM(input_dim=background.shape[-1]).to(torch.device("cpu"))
+    model_cpu.load_state_dict(model.state_dict())
+    model_cpu.eval()
+
+    explainer = shap.DeepExplainer(model_cpu, background)
+    shap_values = explainer.shap_values(eval_features, check_additivity=False)
+    if isinstance(shap_values, list):
+        shap_values = shap_values[0]
+    shap_array = np.asarray(shap_values)
+    shap_agg = shap_array.sum(axis=1).reshape(shap_array.shape[0], -1)
+
+    feature_matrix = eval_feats_np.mean(axis=1)
+    feature_df = pd.DataFrame(feature_matrix, columns=feature_cols)
+    sample_df = pd.concat([eval_meta.reset_index(drop=True), feature_df], axis=1)
+
+    actual = eval_targets
+    preds_full = predictions.get(eval_split, np.zeros_like(sequence_data[eval_split]["targets"]))
+    preds = preds_full[: len(actual)]
+
+    write_shap_outputs(
+        level_name,
+        "TorchLSTM",
+        eval_split,
+        feature_cols,
+        sample_df,
+        shap_agg,
+        target_col,
+        preds,
+        actual,
+    )
+
+
+def run_lstm_pipeline(
+    panel: pd.DataFrame,
+    feature_cols: List[str],
+    target_col: str,
+    level_name: str = "Ward",
+    group_col: str = "Ward",
+    meta_cols: List[str] | None = None,
+    export_shap: bool = True,
+):
+    sequence_data, scaler_info = prepare_sequence_data(
+        panel,
+        feature_cols,
+        target_col,
+        group_col=group_col,
+        meta_cols=meta_cols,
+    )
     if sequence_data["train"]["features"].size == 0:
         return pd.DataFrame(), pd.DataFrame()
 
@@ -207,7 +286,7 @@ def run_lstm_pipeline(ward_panel: pd.DataFrame, feature_cols: List[str], target_
                 for metric in ["mae", "rmse", "r2"]
             },
         }
-    ).assign(Level="Ward")
+    ).assign(Level=level_name)
 
     prediction_frames = []
     for split in ["train", "val", "test"]:
@@ -215,14 +294,19 @@ def run_lstm_pipeline(ward_panel: pd.DataFrame, feature_cols: List[str], target_
         if meta.empty:
             continue
         meta["Model"] = "TorchLSTM"
-        meta["Level"] = "Ward"
+        meta["Level"] = level_name
         meta["Split"] = split
         meta["Actual"] = sequence_data[split]["targets"]
         meta["Predicted"] = lstm_predictions[split]
         prediction_frames.append(meta)
 
     predictions_df = pd.concat(prediction_frames, ignore_index=True) if prediction_frames else pd.DataFrame()
-    torch.save(lstm_model.state_dict(), config.OUTPUT_DIR / "ward_model_torchlstm.pt")
-    with (config.OUTPUT_DIR / "ward_model_torchlstm_features.json").open("w", encoding="utf-8") as fh:
+    model_tag = level_name.lower()
+    torch.save(lstm_model.state_dict(), config.OUTPUT_DIR / f"{model_tag}_model_torchlstm.pt")
+    with (config.OUTPUT_DIR / f"{model_tag}_model_torchlstm_features.json").open("w", encoding="utf-8") as fh:
         json.dump({"feature_cols": scaler_info["features"], **scaler_info}, fh, indent=2)
+    if export_shap:
+        export_lstm_shap(level_name, lstm_model, sequence_data, feature_cols, target_col, lstm_predictions)
     return results_df, predictions_df
+MAX_LSTM_SHAP_EVAL = 80
+LSTM_SHAP_BACKGROUND_CAP = 100

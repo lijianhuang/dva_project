@@ -1,0 +1,13 @@
+Level,Model,Fraction,TrainRows,ValRows,TestRows,TrainTimeSeconds,InferTimeSeconds,Test_MAE,Test_RMSE,Test_R2
+Mesh,LinearRegression,0.25,6705,0,0,0.002880499989259988,,,,
+Mesh,RandomForest,0.25,6705,0,0,4.162246000021696,,,,
+Mesh,LightGBM,0.25,6705,0,0,0.33997279999312013,,,,
+Mesh,LinearRegression,0.5,13409,0,0,0.005857200012542307,,,,
+Mesh,RandomForest,0.5,13409,0,0,9.107798899989575,,,,
+Mesh,LightGBM,0.5,13409,0,0,0.3811127000080887,,,,
+Mesh,LinearRegression,0.75,20114,0,0,0.006551900005433708,,,,
+Mesh,RandomForest,0.75,20114,0,0,12.719039100018563,,,,
+Mesh,LightGBM,0.75,20114,0,0,0.44057710000197403,,,,
+Mesh,LinearRegression,1.0,26818,0,0,0.009302300022682175,,,,
+Mesh,RandomForest,1.0,26818,0,0,18.869247700000415,,,,
+Mesh,LightGBM,1.0,26818,0,0,0.5557458999974187,,,,

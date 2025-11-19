@@ -59,6 +59,16 @@ def build_ward_panel(main_df: pd.DataFrame, hedonic: dict) -> pd.DataFrame:
         if "WardHedonicIndex" not in ward_panel.columns:
             ward_panel["WardHedonicIndex"] = pd.NA
 
+    ward_panel["WardHedonicIndex_missing"] = ward_panel["WardHedonicIndex"].isna().astype(int)
+    ward_panel["WardHedonicIndex"] = ward_panel["WardHedonicIndex"].fillna(ward_panel["WardHedonicIndexFull"])
+    ward_panel["WardHedonicIndex"] = (
+        ward_panel.groupby("Ward")["WardHedonicIndex"].ffill().bfill()
+    )
+    ward_panel["WardHedonicIndex"] = ward_panel["WardHedonicIndex"].fillna(
+        ward_panel.groupby("Ward")["MedianPriceSqM"].transform("median")
+    )
+    ward_panel["WardHedonicIndex"] = ward_panel["WardHedonicIndex"].fillna(ward_panel["MedianPriceSqM"])
+
     ward_panel = add_temporal_features(ward_panel, "Ward", "MedianPriceSqM")
     quarter_series = pd.to_numeric(ward_panel["PeriodKey"].str.extract(r"Q(\d)", expand=False), errors="coerce")
     ward_panel["Quarter"] = quarter_series.fillna(1).astype(int)
@@ -87,7 +97,17 @@ def build_mesh_panel(main_df: pd.DataFrame, mesh_panel_raw: pd.DataFrame, ward_p
     )
     mesh_panel = mesh_panel.merge(mesh_to_ward, on="Mesh250m", how="left")
     mesh_panel = mesh_panel.merge(
-        ward_panel[["Ward", "PeriodKey", "WardHedonicIndex", "WardHedonicIndexFull", "WardLat", "WardLon"]],
+        ward_panel[
+            [
+                "Ward",
+                "PeriodKey",
+                "WardHedonicIndex",
+                "WardHedonicIndexFull",
+                "WardHedonicIndex_missing",
+                "WardLat",
+                "WardLon",
+            ]
+        ],
         on=["Ward", "PeriodKey"],
         how="left",
     )
@@ -121,6 +141,14 @@ def build_mesh_panel(main_df: pd.DataFrame, mesh_panel_raw: pd.DataFrame, ward_p
     else:
         if "MeshHedonicIndex" not in mesh_panel.columns:
             mesh_panel["MeshHedonicIndex"] = pd.NA
+
+    mesh_panel["MeshHedonicIndex_missing"] = mesh_panel["MeshHedonicIndex"].isna().astype(int)
+    mesh_panel["MeshHedonicIndex"] = mesh_panel["MeshHedonicIndex"].fillna(mesh_panel["MeshHedonicIndexFull"])
+    mesh_panel["MeshHedonicIndex"] = mesh_panel["MeshHedonicIndex"].fillna(mesh_panel["WardHedonicIndex"])
+    mesh_panel["MeshHedonicIndex"] = mesh_panel["MeshHedonicIndex"].fillna(mesh_panel["WardHedonicIndexFull"])
+    mesh_panel["MeshHedonicIndex"] = (
+        mesh_panel.groupby("Mesh250m")["MeshHedonicIndex"].ffill().bfill()
+    )
 
     encoder = LabelEncoder()
     mesh_panel["Ward_encoded"] = encoder.fit_transform(mesh_panel["Ward"].fillna("Unknown"))

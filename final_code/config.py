@@ -8,6 +8,7 @@ PACKAGE_DIR = REPO_ROOT / "final_code"
 DATA_DIR = PACKAGE_DIR / "data"
 OUTPUT_DIR = PACKAGE_DIR / "outputs"
 SHAP_DIR = OUTPUT_DIR / "shap_outputs"
+SHAP_PLOTS_DIR = OUTPUT_DIR / "shap_plots"
 
 MAIN_FEATURES_PARQUET = DATA_DIR / "main_features.parquet"
 MAIN_FEATURES_CSV = DATA_DIR / "main_features.csv"

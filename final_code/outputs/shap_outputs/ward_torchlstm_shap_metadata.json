@@ -1,0 +1,15 @@
+{
+  "expected_value": 651293.214596808,
+  "feature_cols": [
+    "MedianPriceSqM",
+    "MedianPriceSqM_lag1",
+    "MedianPriceSqM_ma4q",
+    "MedianPriceSqM_growth_qoq",
+    "TransactionCount",
+    "AvgBuildingAge",
+    "ActiveMeshes"
+  ],
+  "n_samples": 80,
+  "target_col": "MedianPriceSqM",
+  "split": "val"
+}

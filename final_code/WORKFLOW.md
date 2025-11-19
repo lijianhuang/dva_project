@@ -43,7 +43,7 @@ pip install pandas numpy pyarrow scikit-learn lightgbm shap torch joblib
 python -m final_code.run_workflow
 ```
 
-The script covers the entire modeling pipeline: loads inputs, builds ward/mesh panels, trains LR/RF/LightGBM models, generates SHAP summaries (global + per-record), trains the Torch LSTM with target scaling, and exports dashboard-ready CSVs. Completion logs include the output directory so you can verify each artifact.
+The script covers the entire modeling pipeline: loads inputs, builds ward/mesh panels (with hedonic fallbacks + missing-value flags), trains LR/RF/LightGBM models, generates SHAP summaries (global + per-record) for both wards and meshes, trains the Torch LSTMs for both levels (with optional SHAP exports), and exports dashboard-ready CSVs. Completion logs include the output directory so you can verify each artifact. Environment toggles (`EXPORT_TREE_SHAP`, `EXPORT_LINEAR_SHAP`, `EXPORT_LSTM_SHAP`) let you skip specific SHAP passes if you need a faster run.
 
 ## 4. Required Inputs
 
@@ -52,7 +52,11 @@ Ensure these files exist in `final_code/data/` before running:
 - `main_features.parquet`
 - `main_features.csv`
 - `mesh_quarter_features.csv`
-- Optional: any `hedonic_index_*.csv` files (missing ones simply leave NaNs in the corresponding columns)
+- `hedonic_index_overall.csv`
+- `hedonic_index_by_ward.csv`
+- `hedonic_index_by_ward_trainmodel.csv`
+- `hedonic_index_by_mesh.csv`
+- `hedonic_index_by_mesh_trainmodel.csv`
 
 ## 5. Outputs Generated
 
@@ -62,8 +66,9 @@ Key files written to `final_code/outputs/`:
 - `ward_predictions_detailed.csv`
 - `mesh_predictions_detailed.csv`
 - `model_predictions_viz.csv`
-- `shap_outputs/` (LightGBM + Random Forest local/global explanations)
-- Serialized models (`ward_model_*.pkl`, `ward_model_torchlstm.pt`)
+- `shap_outputs/` (Linear Regression, Random Forest, LightGBM, and Torch LSTM explanations for Ward + Mesh)
+- `shap_plots/<level>/` (bar + beeswarm PNGs for each model family)
+- Serialized models (`ward_model_*.pkl`, `ward_model_torchlstm.pt`, `mesh_model_torchlstm.pt`)
 
 ## 6. Troubleshooting
 

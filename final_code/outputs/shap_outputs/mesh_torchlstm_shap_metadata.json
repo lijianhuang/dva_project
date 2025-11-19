@@ -1,0 +1,15 @@
+{
+  "expected_value": 794212.0376974344,
+  "feature_cols": [
+    "mesh_median_ppsqm",
+    "mesh_median_ppsqm_lag1",
+    "mesh_median_ppsqm_ma4q",
+    "mesh_median_ppsqm_growth_qoq",
+    "mesh_transaction_count",
+    "mesh_avg_age",
+    "mesh_avg_area"
+  ],
+  "n_samples": 400,
+  "target_col": "mesh_median_ppsqm",
+  "split": "val"
+}
