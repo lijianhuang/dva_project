@@ -5,12 +5,16 @@ import json
 import numpy as np
 import pandas as pd
 import shap
-from matplotlib import pyplot as plt
+import matplotlib
+
+# force non-interactive backend to avoid Tk warnings
+matplotlib.use("Agg")
+from matplotlib import pyplot as plt  # noqa: E402
 
 from . import config
 
-PLOT_SAMPLE_CAP = 2000
-
+# optional cap to keep plot generation fast
+PLOT_SAMPLE_CAP = 1000
 META_COLS = [
     "PeriodKey",
     "Ward",
@@ -19,6 +23,7 @@ META_COLS = [
     "WardLon",
     "MeshLat",
     "MeshLon",
+    "City",
 ]
 
 
@@ -58,7 +63,10 @@ def write_shap_outputs(
     summary_df["ContributionShare"] = (
         summary_df["MeanAbsSHAP"] / total_mean_abs if total_mean_abs else 0
     )
-    summary_path = config.SHAP_DIR / f"{level_name.lower()}_{model_name.lower()}_shap_summary.csv"
+    summary_path = (
+        config.SHAP_DIR
+        / f"{level_name.lower()}_{model_name.lower()}_{split_name}_shap_summary.csv"
+    )
     summary_df.to_csv(summary_path, index=False)
 
     predictions = np.asarray(predictions).reshape(-1)
@@ -90,10 +98,14 @@ def write_shap_outputs(
             )
     local_df = pd.DataFrame(local_records)
     local_df.to_csv(
-        config.SHAP_DIR / f"{level_name.lower()}_{model_name.lower()}_shap_local.csv",
+        config.SHAP_DIR
+        / f"{level_name.lower()}_{model_name.lower()}_{split_name}_shap_local.csv",
         index=False,
     )
-    metadata_path = config.SHAP_DIR / f"{level_name.lower()}_{model_name.lower()}_shap_metadata.json"
+    metadata_path = (
+        config.SHAP_DIR
+        / f"{level_name.lower()}_{model_name.lower()}_{split_name}_shap_metadata.json"
+    )
     if expected_value is None:
         expected_value = float(np.mean(predictions))
     with metadata_path.open("w", encoding="utf-8") as fh:
@@ -113,12 +125,13 @@ def write_shap_outputs(
     plots_dir.mkdir(parents=True, exist_ok=True)
     plot_matrix = feature_matrix
     plot_shap = shap_array
-    if len(feature_matrix) > PLOT_SAMPLE_CAP:
+    if len(plot_matrix) > PLOT_SAMPLE_CAP:
         sample_idx = feature_matrix.sample(n=PLOT_SAMPLE_CAP, random_state=42).index
         plot_matrix = feature_matrix.loc[sample_idx]
         plot_shap = shap_array[sample_idx]
+    rng = np.random.default_rng(42)
     plt.figure()
-    shap.summary_plot(plot_shap, plot_matrix, plot_type="bar", show=False)
+    shap.summary_plot(plot_shap, plot_matrix, plot_type="bar", show=False, rng=rng)
     plt.tight_layout()
     plt.savefig(
         plots_dir / f"{level_name.lower()}_{model_name.lower()}_{split_name}_bar.png",
@@ -128,7 +141,7 @@ def write_shap_outputs(
     plt.close()
 
     plt.figure()
-    shap.summary_plot(plot_shap, plot_matrix, show=False)
+    shap.summary_plot(plot_shap, plot_matrix, show=False, rng=rng)
     plt.tight_layout()
     plt.savefig(
         plots_dir / f"{level_name.lower()}_{model_name.lower()}_{split_name}_beeswarm.png",

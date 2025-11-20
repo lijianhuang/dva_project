@@ -246,6 +246,22 @@ def export_lstm_shap(
         preds,
         actual,
     )
+    if "City" in sample_df.columns:
+        for city in sample_df["City"].dropna().unique():
+            mask = sample_df["City"] == city
+            if mask.sum() == 0:
+                continue
+            write_shap_outputs(
+                level_name,
+                "TorchLSTM",
+                f"{eval_split}_{str(city).lower()}",
+                feature_cols,
+                sample_df.loc[mask].reset_index(drop=True),
+                shap_agg[mask],
+                target_col,
+                preds[mask],
+                actual[mask],
+            )
 
 
 def run_lstm_pipeline(
@@ -308,5 +324,6 @@ def run_lstm_pipeline(
     if export_shap:
         export_lstm_shap(level_name, lstm_model, sequence_data, feature_cols, target_col, lstm_predictions)
     return results_df, predictions_df
-MAX_LSTM_SHAP_EVAL = 80
-LSTM_SHAP_BACKGROUND_CAP = 100
+
+MAX_LSTM_SHAP_EVAL = 120
+LSTM_SHAP_BACKGROUND_CAP = 120

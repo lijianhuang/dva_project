@@ -32,8 +32,8 @@ MODEL_FACTORIES = {
 }
 
 TREE_MODELS = {"RandomForest", "LightGBM"}
-TREE_SHAP_SAMPLE_CAP = 150
-LINEAR_SHAP_SAMPLE_CAP = 80
+TREE_SHAP_SAMPLE_CAP = 500
+LINEAR_SHAP_SAMPLE_CAP = 200
 
 
 def prepare_splits(panel: pd.DataFrame, feature_cols: List[str], target_col: str):
@@ -120,7 +120,7 @@ def save_tree_shap_outputs(
     if split_df.empty:
         return
     explainer = shap.TreeExplainer(model)
-    sample = split_df.copy()
+    sample = split_df.copy().reset_index(drop=True)
     if len(sample) > TREE_SHAP_SAMPLE_CAP:
         sample = sample.sample(n=TREE_SHAP_SAMPLE_CAP, random_state=42).reset_index(drop=True)
     shap_values = explainer.shap_values(sample[feature_cols])
@@ -146,6 +146,23 @@ def save_tree_shap_outputs(
         actual,
         float(expected_value),
     )
+    if "City" in sample.columns:
+        for city in sample["City"].dropna().unique():
+            city_mask = sample["City"] == city
+            if city_mask.sum() == 0:
+                continue
+            write_shap_outputs(
+                level_name,
+                model_name,
+                f"{split_name}_{str(city).lower()}",
+                feature_cols,
+                sample.loc[city_mask].reset_index(drop=True),
+                shap_values[city_mask],
+                target_col,
+                predictions[city_mask],
+                actual[city_mask],
+                float(expected_value),
+            )
 
 
 def export_tree_shap(
@@ -212,15 +229,34 @@ def export_linear_shap(
     expected_value = getattr(shap_values, "base_values", np.mean(predictions))
     if isinstance(expected_value, (list, np.ndarray)):
         expected_value = np.array(expected_value).reshape(-1)[0]
+    eval_df = eval_df.reset_index(drop=True)
     write_shap_outputs(
         level_name,
         "LinearRegression",
         split_name,
         feature_cols,
-        eval_df.reset_index(drop=True),
+        eval_df,
         shap_values,
         target_col,
         predictions,
         actual,
         float(expected_value),
     )
+    if "City" in eval_df.columns:
+        shap_array = getattr(shap_values, "values", shap_values)
+        for city in eval_df["City"].dropna().unique():
+            mask = eval_df["City"] == city
+            if mask.sum() == 0:
+                continue
+            write_shap_outputs(
+                level_name,
+                "LinearRegression",
+                f"{split_name}_{str(city).lower()}",
+                feature_cols,
+                eval_df.loc[mask].reset_index(drop=True),
+                shap_array[mask],
+                target_col,
+                predictions[mask],
+                actual[mask],
+                float(expected_value),
+            )

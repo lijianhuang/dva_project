@@ -26,6 +26,7 @@ def load_datasets() -> Dict[str, pd.DataFrame]:
     main_df = pd.read_parquet(config.MAIN_FEATURES_PARQUET)
     mesh_panel_raw = pd.read_csv(config.MESH_FEATURES_CSV)
 
+    # normalise ids and names before downstream merges
     main_df["Mesh250m"] = main_df["Mesh250m"].astype(str)
     main_df.loc[main_df["Mesh250m"].str.lower() == "nan", "Mesh250m"] = pd.NA
     main_df["WardName"] = main_df["Municipality_en"].fillna(main_df["Municipality"]).fillna("Unknown")

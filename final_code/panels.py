@@ -5,8 +5,23 @@ from sklearn.preprocessing import LabelEncoder
 
 from .utils import add_temporal_features
 
+# sendai ward names appear with or without ", Sendai City" suffix; match both
+SENDAI_WARDS = {
+    "Aoba Ward",
+    "Aoba Ward, Sendai City",
+    "Miyagino Ward",
+    "Miyagino Ward, Sendai City",
+    "Izumi Ward",
+    "Izumi Ward, Sendai City",
+    "Taihaku Ward",
+    "Taihaku Ward, Sendai City",
+    "Wakabayashi Ward",
+    "Wakabayashi Ward, Sendai City",
+}
+
 
 def build_ward_panel(main_df: pd.DataFrame, hedonic: dict) -> pd.DataFrame:
+    # aggregate to ward-quarter with basic stats
     ward_panel = (
         main_df.groupby(["WardName", "PeriodKey"], dropna=False)
         .agg(
@@ -20,6 +35,9 @@ def build_ward_panel(main_df: pd.DataFrame, hedonic: dict) -> pd.DataFrame:
         )
         .reset_index()
         .rename(columns={"WardName": "Ward"})
+    )
+    ward_panel["City"] = ward_panel["Ward"].apply(
+        lambda w: "Sendai" if (isinstance(w, str) and (w in SENDAI_WARDS or "Sendai" in w)) else "Tokyo"
     )
     ward_counts = (
         main_df.groupby(["WardName", "PeriodKey"], dropna=False)
@@ -101,6 +119,7 @@ def build_mesh_panel(main_df: pd.DataFrame, mesh_panel_raw: pd.DataFrame, ward_p
             [
                 "Ward",
                 "PeriodKey",
+                "City",
                 "WardHedonicIndex",
                 "WardHedonicIndexFull",
                 "WardHedonicIndex_missing",

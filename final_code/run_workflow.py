@@ -10,8 +10,10 @@ from .panels import build_ward_panel, build_mesh_panel
 from .models import export_linear_shap, export_tree_shap, train_regression_models
 from .lstm_model import run_lstm_pipeline
 from .exporters import export_artifacts
+from .experiments import run_efficiency_scaling
 
 
+# main targets for ward/mesh forecasting
 WARD_TARGET = "MedianPriceSqM"
 MESH_TARGET = "mesh_median_ppsqm"
 
@@ -114,7 +116,7 @@ def run():
         WARD_TARGET,
         level_name="Ward",
         group_col="Ward",
-        meta_cols=["WardLat", "WardLon"],
+        meta_cols=["WardLat", "WardLon", "City"],
         export_shap=export_lstm_shap,
     )
     mesh_lstm_results, mesh_lstm_predictions = run_lstm_pipeline(
@@ -123,7 +125,7 @@ def run():
         MESH_TARGET,
         level_name="Mesh",
         group_col="Mesh250m",
-        meta_cols=["Ward", "WardLat", "WardLon", "MeshLat", "MeshLon"],
+        meta_cols=["Ward", "WardLat", "WardLon", "MeshLat", "MeshLon", "City"],
         export_shap=export_lstm_shap,
     )
 
@@ -138,6 +140,8 @@ def run():
         ward_lstm_predictions,
         mesh_lstm_predictions,
     )
+    # optional efficiency scaling reports
+    run_efficiency_scaling(["Ward", "Mesh"], fractions=[0.25, 0.5, 0.75, 1.0])
 
     print("Workflow complete. Artifacts written to:")
     for path in [

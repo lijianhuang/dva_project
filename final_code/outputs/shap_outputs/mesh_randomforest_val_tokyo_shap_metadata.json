@@ -1,0 +1,23 @@
+{
+  "expected_value": 631049.697751062,
+  "feature_cols": [
+    "mesh_median_ppsqm_lag1",
+    "mesh_median_ppsqm_lag4",
+    "mesh_median_ppsqm_growth_qoq",
+    "mesh_median_ppsqm_growth_yoy",
+    "mesh_median_ppsqm_ma4q",
+    "mesh_median_ppsqm_std4q",
+    "mesh_transaction_count",
+    "mesh_avg_age",
+    "mesh_avg_area",
+    "TimeTrend",
+    "Ward_encoded",
+    "WardHedonicIndex",
+    "WardHedonicIndex_missing",
+    "MeshHedonicIndex",
+    "MeshHedonicIndex_missing"
+  ],
+  "n_samples": 423,
+  "target_col": "mesh_median_ppsqm",
+  "split": "val_tokyo"
+}

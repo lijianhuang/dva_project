@@ -11,10 +11,49 @@ from . import config
 from .data_loader import load_datasets
 from .models import MODEL_FACTORIES, prepare_splits
 from .panels import build_mesh_panel, build_ward_panel
-from .run_workflow import MESH_FEATURES, MESH_TARGET, WARD_FEATURES, WARD_TARGET
 from .utils import evaluate_sets
 
 REPORTS_DIR = config.OUTPUT_DIR / "reports"
+
+# keep feature/target definitions aligned with run_workflow
+WARD_TARGET = "MedianPriceSqM"
+MESH_TARGET = "mesh_median_ppsqm"
+
+WARD_FEATURES = [
+    "MedianPriceSqM_lag1",
+    "MedianPriceSqM_lag4",
+    "MedianPriceSqM_growth_qoq",
+    "MedianPriceSqM_growth_yoy",
+    "MedianPriceSqM_ma4q",
+    "MedianPriceSqM_std4q",
+    "TransactionCount",
+    "AvgBuildingAge",
+    "AvgArea",
+    "ActiveMeshes",
+    "TimeTrend",
+    "Ward_encoded",
+    "Q_2",
+    "Q_3",
+    "Q_4",
+]
+
+MESH_FEATURES = [
+    "mesh_median_ppsqm_lag1",
+    "mesh_median_ppsqm_lag4",
+    "mesh_median_ppsqm_growth_qoq",
+    "mesh_median_ppsqm_growth_yoy",
+    "mesh_median_ppsqm_ma4q",
+    "mesh_median_ppsqm_std4q",
+    "mesh_transaction_count",
+    "mesh_avg_age",
+    "mesh_avg_area",
+    "TimeTrend",
+    "Ward_encoded",
+    "WardHedonicIndex",
+    "WardHedonicIndex_missing",
+    "MeshHedonicIndex",
+    "MeshHedonicIndex_missing",
+]
 
 
 def _ensure_reports_dir() -> None:
