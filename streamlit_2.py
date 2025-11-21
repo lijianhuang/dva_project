@@ -319,9 +319,9 @@ with left_col:
         st.subheader(f"{city}: {model} Global Feature importance")
         try:
             if genre == "Bar Plot":
-                st.image(f"mesh_{model_name}_val_{city}_bar.png", width='stretch')
+                st.image(f"mesh_{model_name}_val_{city}_bar.png", use_container_width=True)
             else:
-                st.image(f"mesh_{model_name}_val_{city}_beeswarm.png", width='stretch')
+                st.image(f"mesh_{model_name}_val_{city}_beeswarm.png", use_container_width=True)
         except:
             st.warning(f"SHAP for {city}: {model} is not available in this version. Support will be added in a future update.")
 with right_col:
