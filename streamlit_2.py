@@ -314,13 +314,31 @@ with left_col:
     if show_shap:
         model_name = model.strip().lower()
         genre = st.radio(
-        "Choose your plot",["Bar Plot","BeeSwarm Plot"],index=None)
+            "Choose your plot", ["Bar Plot", "BeeSwarm Plot"], index=None
+        )
 
         st.subheader(f"{city}: {model} Global Feature importance")
-        if genre == "Bar Plot":
-            st.image(f"mesh_{model_name}_val_{city}_bar.png", use_container_width=True)
-        else:
-            st.image(f"mesh_{model_name}_val_{city}_beeswarm.png", use_container_width=True)
+
+        # image filenames now in root
+        bar_img = BASE_DIR / f"mesh_{model_name}_val_{city}_bar.png"
+        beeswarm_img = BASE_DIR / f"mesh_{model_name}_val_{city}_beeswarm.png"
+
+        try:
+            if genre == "Bar Plot":
+                if bar_img.exists():
+                    st.image(str(bar_img), use_column_width=True)
+                else:
+                    st.warning(f"Missing bar plot image: {bar_img.name}")
+            else:
+                if beeswarm_img.exists():
+                    st.image(str(beeswarm_img), use_column_width=True)
+                else:
+                    st.warning(f"Missing beeswarm image: {beeswarm_img.name}")
+        except Exception as e:
+            st.warning(
+                f"SHAP for {city}: {model} could not be displayed ({e}). "
+                "Support will be added in a future update."
+            )
 with right_col:
         #  Interactive dependence plot for top 5 features (Mesh only)
         shap_exp_global = load_mesh_shap_explanation(model)
