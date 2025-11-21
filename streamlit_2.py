@@ -12,8 +12,28 @@ import pickle
 from pathlib import Path
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
+from PIL import Image
 
 BASE_DIR = Path(__file__).resolve().parent
+def show_png_with_matplotlib(img_path: Path, caption: str | None = None):
+    """Safely load and display a PNG via matplotlib."""
+    if not img_path.exists():
+        st.warning(f"Image not found: {img_path.name}")
+        return
+
+    try:
+        img = Image.open(img_path)
+    except Exception as e:
+        st.error(f"Failed to open image {img_path.name}: {e}")
+        return
+
+    fig, ax = plt.subplots()
+    ax.imshow(img)
+    ax.axis("off")
+    if caption:
+        ax.set_title(caption)
+
+    st.pyplot(fig)
 
 @st.cache_data
 def load_mesh_shap_explanation(model_name: str):
@@ -319,26 +339,12 @@ with left_col:
 
         st.subheader(f"{city}: {model} Global Feature importance")
 
-        # image filenames now in root
-        bar_img = BASE_DIR / f"mesh_{model_name}_val_{city}_bar.png"
-        beeswarm_img = BASE_DIR / f"mesh_{model_name}_val_{city}_beeswarm.png"
+        if genre == "Bar Plot":
+            img_path = BASE_DIR / f"mesh_{model_name}_val_{city}_bar.png"
+        else:
+            img_path = BASE_DIR / f"mesh_{model_name}_val_{city}_beeswarm.png"
 
-        try:
-            if genre == "Bar Plot":
-                if bar_img.exists():
-                    st.image(str(bar_img), use_column_width=True)
-                else:
-                    st.warning(f"Missing bar plot image: {bar_img.name}")
-            else:
-                if beeswarm_img.exists():
-                    st.image(str(beeswarm_img), use_column_width=True)
-                else:
-                    st.warning(f"Missing beeswarm image: {beeswarm_img.name}")
-        except Exception as e:
-            st.warning(
-                f"SHAP for {city}: {model} could not be displayed ({e}). "
-                "Support will be added in a future update."
-            )
+        show_png_with_matplotlib(img_path, caption=f"{city} - {model} ({genre})")
 with right_col:
         #  Interactive dependence plot for top 5 features (Mesh only)
         shap_exp_global = load_mesh_shap_explanation(model)
