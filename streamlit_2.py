@@ -59,7 +59,7 @@ CENTER = {
 @st.cache_data
 def load_predictions():
     try:
-        df_pred = pd.read_csv("final_code/outputs/model_predictions_viz.csv")
+        df_pred = pd.read_csv("model_predictions_viz.csv")
     except Exception as e:
         st.error(f"❌ Failed to load model_predictions_viz.csv: {e}")
         df_pred = pd.DataFrame()
@@ -91,7 +91,7 @@ def load_mesh_data():
 gdf = load_mesh_data()
 
 # Load model metrics
-df_results = pd.read_csv("final_code/outputs/model_results.csv")
+df_results = pd.read_csv("model_results.csv")
 
 # Filter only Mesh level models
 mesh_models = df_results[df_results["Level"].str.lower() == "Mesh"]
@@ -107,7 +107,7 @@ else:
 # Coverage (based on mesh_quarterly_price_index.csv)
 # =====================================================
 try:
-    price_index_df = pd.read_csv("final_code/data/mesh_quarterly_price_index.csv")
+    price_index_df = pd.read_csv("mesh_quarterly_price_index.csv")
     # Unique meshes that have valid price index values
     coverage = price_index_df['Latitude'].notnull().sum()
     total = len(price_index_df["Latitude"])
@@ -155,7 +155,7 @@ if show_leaderboard:
     st.subheader("Model Leaderboard")
 
     # Load model results
-    df_results = pd.read_csv("final_code/outputs/model_results.csv")
+    df_results = pd.read_csv("model_results.csv")
 
     # Select level (Ward or Mesh)
     levels = df_results["Level"].unique().tolist()[::-1]
@@ -313,9 +313,9 @@ with left_col:
         st.subheader(f"{city}: {model} Global Feature importance")
         try:
             if genre == "Bar Plot":
-                st.image(f"final_code/outputs/shap_plots/mesh/mesh_{model_name}_val_{city}_bar.png", width='stretch')
+                st.image(f"mesh_{model_name}_val_{city}_bar.png", width='stretch')
             else:
-                st.image(f"final_code/outputs/shap_plots/mesh/mesh_{model_name}_val_{city}_beeswarm.png", width='stretch')
+                st.image(f"mesh_{model_name}_val_{city}_beeswarm.png", width='stretch')
         except:
             st.warning(f"SHAP for {city}: {model} is not available in this version. Support will be added in a future update.")
 with right_col:
