@@ -18,7 +18,7 @@ SHAP_DIR = Path("final_code/outputs/")
 def load_mesh_shap_explanation(model_name: str):
     """Load mesh-level SHAP Explanation (.pkl) for a given model."""
     model_key = model_name.strip().lower()
-    shap_path = SHAP_DIR / f"mesh_{model_key}_val_shap.pkl"
+    shap_path = f"mesh_{model_key}_val_shap.pkl"
     if not shap_path.exists():
         st.warning(f"SHAP pickle not found: {shap_path}")
         return None
