@@ -1,0 +1,12 @@
+streamlit>=1.36
+pandas>=2.0
+numpy>=1.26
+
+geopandas>=0.14
+pyogrio>=0.9
+
+pydeck>=0.8
+plotly>=5.0
+
+shap>=0.45
+matplotlib>=3.8
