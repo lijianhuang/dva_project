@@ -317,10 +317,13 @@ with left_col:
         "Choose your plot",["Bar Plot","BeeSwarm Plot"],index=None)
 
         st.subheader(f"{city}: {model} Global Feature importance")
-        if genre == "Bar Plot":
-            st.image(f"mesh_{model_name}_val_{city}_bar.png", use_container_width=True)
-        else:
-            st.image(f"mesh_{model_name}_val_{city}_beeswarm.png", use_container_width=True)
+        try:
+            if genre == "Bar Plot":
+                st.image(f"mesh_{model_name}_val_{city}_bar.png", use_container_width=True)
+            else:
+                st.image(f"mesh_{model_name}_val_{city}_beeswarm.png", use_container_width=True)
+        except:
+            st.warning(f"SHAP for {city}: {model} is not available in this version. Support will be added in a future update.")
 with right_col:
         #  Interactive dependence plot for top 5 features (Mesh only)
         shap_exp_global = load_mesh_shap_explanation(model)
