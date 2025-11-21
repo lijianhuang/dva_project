@@ -12,54 +12,8 @@ import pickle
 from pathlib import Path
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
-from PIL import Image
-import plotly.graph_objects as go
 
 BASE_DIR = Path(__file__).resolve().parent
-def show_png_with_plotly(img_path: Path, title: str | None = None):
-    """Safely load and display a PNG using Plotly instead of st.image."""
-    st.write(f"DEBUG: trying to load image: {img_path} (exists={img_path.exists()})")
-
-    if not img_path.exists():
-        st.warning(f"Image not found: {img_path.name}")
-        return
-
-    try:
-        img = Image.open(img_path)
-        img_arr = np.array(img)
-    except Exception as e:
-        st.error(f"Failed to open image {img_path.name}: {e}")
-        return
-
-    fig = go.Figure(go.Image(z=img_arr))
-
-    # Hide axes and extra whitespace
-    fig.update_xaxes(showticklabels=False).update_yaxes(showticklabels=False)
-    if title:
-        fig.update_layout(title=title)
-    fig.update_layout(margin=dict(l=0, r=0, t=30 if title else 0, b=0))
-
-    st.plotly_chart(fig, use_container_width=True)
-
-def show_png_with_matplotlib(img_path: Path, caption: str | None = None):
-    """Safely load and display a PNG via matplotlib."""
-    if not img_path.exists():
-        st.warning(f"Image not found: {img_path.name}")
-        return
-
-    try:
-        img = Image.open(img_path)
-    except Exception as e:
-        st.error(f"Failed to open image {img_path.name}: {e}")
-        return
-
-    fig, ax = plt.subplots()
-    ax.imshow(img)
-    ax.axis("off")
-    if caption:
-        ax.set_title(caption)
-
-    st.pyplot(fig)
 
 @st.cache_data
 def load_mesh_shap_explanation(model_name: str):
@@ -360,20 +314,49 @@ with left_col:
     if show_shap:
         model_name = model.strip().lower()
         genre = st.radio(
-            "Choose your plot", ["Bar Plot", "BeeSwarm Plot"], index=None
-        )
+        "Choose your plot",["Bar Plot","BeeSwarm Plot"],index=None)
 
         st.subheader(f"{city}: {model} Global Feature importance")
-
         if genre == "Bar Plot":
-            img_path = BASE_DIR / f"mesh_{model_name}_val_{city}_bar.png"
+            st.image(f"mesh_{model_name}_val_{city}_bar.png", use_container_width=True)
         else:
-            img_path = BASE_DIR / f"mesh_{model_name}_val_{city}_beeswarm.png"
+            st.image(f"mesh_{model_name}_val_{city}_beeswarm.png", use_container_width=True)
+with right_col:
+        #  Interactive dependence plot for top 5 features (Mesh only)
+        shap_exp_global = load_mesh_shap_explanation(model)
+        if shap_exp_global is not None:
+            st.markdown("### Feature-level SHAP Dependence (Mesh-250m)")
 
-        show_png_with_plotly(
-            img_path,
-            title=f"{city} - {model} ({genre})"
-        )
+            # Compute global importance (mean |SHAP|) to get top 5 features
+            shap_vals = getattr(shap_exp_global, "values", shap_exp_global)
+            abs_mean = np.mean(np.abs(shap_vals), axis=0)
+            top5_idx = np.argsort(-abs_mean)[:5]
+            top5_features = [shap_exp_global.feature_names[i] for i in top5_idx]
+
+            feature_choice = st.selectbox(
+                "Select one of the top 5 features",
+                top5_features,
+                key="dep_feature",
+            )
+
+            interaction_choice = "None"
+            # Prepare feature matrix from the SHAP Explanation
+            X_df = pd.DataFrame(
+                shap_exp_global.data,
+                columns=shap_exp_global.feature_names,
+            )
+
+            # Draw dependence plot using classic SHAP API
+            plt.clf()
+            if interaction_choice == "None":
+                shap.dependence_plot(
+                    feature_choice,
+                    shap_vals,
+                    X_df,
+                    show=False,
+                )
+            fig_dep = plt.gcf()
+            st.pyplot(fig_dep, clear_figure=True)
 
 
 
