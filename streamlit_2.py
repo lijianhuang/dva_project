@@ -13,17 +13,23 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
 
-SHAP_DIR = Path("final_code/outputs/")
+BASE_DIR = Path(__file__).resolve().parent
+
 @st.cache_data
 def load_mesh_shap_explanation(model_name: str):
     """Load mesh-level SHAP Explanation (.pkl) for a given model."""
     model_key = model_name.strip().lower()
-    shap_path = f"mesh_{model_key}_val_shap.pkl"
+    
+    # e.g. BASE_DIR / "mesh_xgboost_val_shap.pkl"
+    shap_path = BASE_DIR / f"mesh_{model_key}_val_shap.pkl"
+
     if not shap_path.exists():
         st.warning(f"SHAP pickle not found: {shap_path}")
         return None
+
     with shap_path.open("rb") as f:
         shap_exp = pickle.load(f)
+
     return shap_exp
 
 def st_shap(plot, height=300):
