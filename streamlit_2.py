@@ -310,20 +310,51 @@ else:
     render_period(city, period, model)
 left_col, right_col = st.columns([0.7, 1])
 
+left_col, right_col = st.columns([0.7, 1])
+
 with left_col:
     if show_shap:
-        model_name = model.strip().lower()
-        genre = st.radio(
-        "Choose your plot",["Bar Plot","BeeSwarm Plot"],index=None)
-
         st.subheader(f"{city}: {model} Global Feature importance")
-        try:
+
+        # Load mesh-level SHAP explanation from .pkl
+        shap_exp_global = load_mesh_shap_explanation(model)
+
+        if shap_exp_global is None:
+            st.warning(
+                f"SHAP explanation for {model} (mesh-level) is not available in this version. "
+                "Pickle file not found on the server."
+            )
+        else:
+            # Choose plot type
+            genre = st.radio(
+                "Choose your plot",
+                ["Bar Plot", "BeeSwarm Plot"],
+                index=0,
+            )
+
+            # Get raw SHAP values and feature matrix
+            shap_vals = getattr(shap_exp_global, "values", shap_exp_global)
+            X_df = pd.DataFrame(
+                shap_exp_global.data,
+                columns=shap_exp_global.feature_names,
+            )
+
             if genre == "Bar Plot":
-                st.image(f"mesh_{model_name}_val_{city}_bar.png", use_container_width=True)
+                # Global mean |SHAP| bar chart
+                plt.clf()
+                shap.plots.bar(shap_exp_global, show=False)
+                fig_bar = plt.gcf()
+                st.pyplot(fig_bar, clear_figure=True)
             else:
-                st.image(f"mesh_{model_name}_val_{city}_beeswarm.png", use_container_width=True)
-        except:
-            st.warning(f"SHAP for {city}: {model} is not available in this version. Support will be added in a future update.")
+                # Classic SHAP beeswarm summary plot
+                plt.clf()
+                shap.summary_plot(
+                    shap_vals,
+                    X_df,
+                    show=False,
+                )
+                fig_swarm = plt.gcf()
+                st.pyplot(fig_swarm, clear_figure=True)
 with right_col:
         #  Interactive dependence plot for top 5 features (Mesh only)
         shap_exp_global = load_mesh_shap_explanation(model)
